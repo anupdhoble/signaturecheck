@@ -1,37 +1,77 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Navbar from './Navbar';
 import LoadingButton from '@mui/lab/LoadingButton';
 import SendIcon from '@mui/icons-material/Send';
+import CircularProgress from '@mui/material/CircularProgress'; // Import CircularProgress component
 import '../styles/home.css';
 
 function Home() {
-    const [loading, setLoading] = React.useState(false);
-    const [image, setImage] = React.useState(null);
+    const [loading, setLoading] = useState(false);
+    const [image, setImage] = useState(null);
+    const [result, setResult] = useState(null); // State to store result
 
     const handleImageChange = (e) => {
         const selectedImage = e.target.files[0];
         if (selectedImage) {
-            setImage(URL.createObjectURL(selectedImage));
+            setImage(selectedImage);
         }
     };
 
-    function handleClickPredict() {
+    const handleClickPredict = () => {
         setLoading(true);
-        // Add your prediction logic here
-    }
+
+        const formData = new FormData();
+        formData.append('image', image);
+
+        fetch('http://localhost:8000/home/classify/', {
+            method: 'POST',
+            body: formData,
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json(); // Assuming the backend returns JSON
+            })
+            .then(data => {
+                // Handle response data
+                setResult(data); // Set the result state with response data
+                setLoading(false);
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+                setLoading(false);
+            });
+    };
 
     return (
         <div className='homecontainer'>
             <Navbar />
             <div className='homebody'>
+
                 <label htmlFor="fileInput" id="imageUpload">Choose Image</label>
                 <input style={{ display: "none" }} id="fileInput" type="file" onChange={handleImageChange} accept="image/*" />
+
                 {image && (
                     <>
                         <div>Preview</div>
-                        <img className="imgpreview" src={image} alt="Handwritten Signature Preview" />
+                        <img className="imgpreview" src={URL.createObjectURL(image)} alt="Handwritten Signature Preview" />
                     </>
                 )}
+
+                {loading ? (
+                    // Show CircularProgress while loading
+                    <CircularProgress style={{ marginTop: '20px' }} />
+                ) : (
+                    // Show result section when not loading
+                    result && (
+                        <div className="result-section">
+                            <p>Result: {result.result}</p>
+                            <p>Confidence: {result.confidence}</p>
+                        </div>
+                    )
+                )}
+
                 <LoadingButton
                     loading={loading}
                     onClick={handleClickPredict}
