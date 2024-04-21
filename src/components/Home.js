@@ -47,6 +47,7 @@ function Home() {
     return (
         <div className='homecontainer'>
             <Navbar />
+            <h2 className='hometitle'>Signature Verification System Using CNN</h2>
             <div className='homebody'>
 
                 <label htmlFor="fileInput" id="imageUpload">Choose Image</label>
@@ -66,8 +67,16 @@ function Home() {
                     // Show result section when not loading
                     result && (
                         <div className="result-section">
-                            <p>Result: {result.result}</p>
-                            <p>Confidence: {result.confidence}</p>
+                            <p>Threshold: 0.5</p>
+                            <p>Threshold Result: {result.result}</p>
+                            <p >Confidence:</p>
+                            {result.result == "Genuine" ? (<>
+                                <p>Genuine: {result.confidence}</p>
+                                <p>Fake: {1-result.confidence}</p>
+                            </>) : (<>
+                                <p>Genuine: {1- result.confidence}</p>
+                                <p>Fake: {result.confidence}</p>
+                            </>)}
                         </div>
                     )
                 )}
@@ -82,6 +91,7 @@ function Home() {
                 >
                     Predict
                 </LoadingButton>
+
             </div>
         </div>
     );
